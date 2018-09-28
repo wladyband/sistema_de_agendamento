@@ -12,40 +12,41 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import com.projeto.kwan.config.propety.KwanApiProperty;
+
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class CorsFilter implements Filter{
+public class CorsFilter implements Filter {
+
+	@Autowired
+	private KwanApiProperty kwanApiProperty;
 	
-	
-	 @Override
-	    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-	            throws IOException, ServletException {
-
-	        HttpServletRequest request = (HttpServletRequest) req;
-	        HttpServletResponse response = (HttpServletResponse) resp;
-
-	        response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-
-	        response.setHeader("Access-Control-Allow-Credentials", "true");
-
-	        response.setHeader("Access-Control-Allow-Origin", request.getHeader("Origin"));
-
-
-	        if ("OPTIONS".equals(request.getMethod())) {
-	        response.setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
-	            response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
-	            response.setHeader("Access-Control-Max-Age", "3600");
-	            response.setStatus(HttpServletResponse.SC_OK);
-	        } else {
-	            chain.doFilter(req, resp);
-	        }
-
-	    }
-
+	@Override
+	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
+			throws IOException, ServletException {
+		
+		HttpServletRequest request = (HttpServletRequest) req;
+		HttpServletResponse response = (HttpServletResponse) resp;
+		
+		response.setHeader("Access-Control-Allow-Origin", kwanApiProperty.getOriginPermitida());
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+		
+		if ("OPTIONS".equals(request.getMethod()) && kwanApiProperty.getOriginPermitida().equals(request.getHeader("Origin"))) {
+			response.setHeader("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS");
+        	response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, Accept");
+        	response.setHeader("Access-Control-Max-Age", "3600");
+			
+			response.setStatus(HttpServletResponse.SC_OK);
+		} else {
+			chain.doFilter(req, resp);
+		}
+		
+	}
 	
 	@Override
 	public void destroy() {
